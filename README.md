@@ -30,7 +30,6 @@ CREATE DATABASE auth_system CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 ### 2. 配置环境变量
 
 ```bash
-cd backend
 cp .env.example .env
 ```
 
@@ -45,20 +44,18 @@ SERVICE_URL = http://127.0.0.1:8000
 ### 3. 安装依赖
 
 ```bash
-pip install -r backend/requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 4. 创建数据表
 
 ```bash
-cd backend
-python -m backend.scripts.create_tables
+python -m scripts.create_tables
 ```
 
 ### 5. 启动服务
 
 ```bash
-cd backend
 python run.py
 ```
 

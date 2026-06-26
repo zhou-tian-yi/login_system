@@ -20,7 +20,7 @@ app.add_middleware(RequestIDMiddleware)
 
 app.include_router(router)
 
-frontend_dir = Path(__file__).parent.parent / "frontend"
+frontend_dir = Path(__file__).parent / "frontend"
 app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 @app.exception_handler(RequestValidationError)
