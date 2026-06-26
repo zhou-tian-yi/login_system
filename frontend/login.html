@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>XX管理系统 - 登录</title>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <h1>XX管理系统</h1>
+        <label>账号：</label> <input id="user-input"> <br><br>
+        <label>密码：</label> <input id="password-input" type="password"> <br><br>
+        <button id="login-button">登录</button>
+        <button id="register-button">注册</button>
+    </div>
+</body>
+<script>
+    window.onload = function () {
+        let access_token = localStorage.getItem("access-token")
+        if (access_token) {
+            window.location.href = "dashboard.html";
+        }
+    };
+
+    let login_button = document.getElementById("login-button");
+    login_button.onclick = async function () {
+        let username = document.getElementById("user-input").value;
+        let password = document.getElementById("password-input").value;
+        if (!username || !password) {
+            alert("请输入账号和密码");
+            return;
+        }
+        let formData = new URLSearchParams();
+        formData.append("username", username);
+        formData.append("password", password);
+        let response = await fetch("http://127.0.0.1:8000/api/auth/login", {
+            method: "POST",
+            body: formData
+        });
+        let result = await response.json();
+        if (response.ok) {
+            alert("登录成功");
+            localStorage.setItem("access-token", result.access_token);
+            window.location.href = "dashboard.html";
+        } else {
+            alert("登录失败: " + result.message);
+        }
+    }
+
+    let register_button = document.getElementById("register-button")
+    register_button.onclick = function () {
+        window.location.href = "register.html"
+    }
+</script>
+
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>XX管理系统 - 控制台</title>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <h1>欢迎来到XX管理系统控制台！</h1>
+
+        <h3 id="welcome-msg">正在加载用户信息...</h3>
+        <p id="user-info"></p>
+
+        <br>
+        <button id="open-rename-button">修改用户名</button>
+        <button id="open-password-button">修改密码</button>
+        <button id="open-delete-button">注销账号</button>
+        <br><br>
+        <button id="logout-button">退出登录</button>
+    </div>
+
+    <div id="rename-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div
+            style="background-color: white; width: 300px; margin: 150px auto; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>修改用户名</h3>
+            <label>新用户名：</label>
+            <input id="new-username-input"><br><br>
+            <button id="submit-rename-btn">确定修改</button>
+            <button id="close-rename-btn">取消</button>
+        </div>
+    </div>
+
+    <div id="password-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div
+            style="background-color: white; width: 300px; margin: 150px auto; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>修改密码</h3>
+            <label>原密码：</label>
+            <input id="old-password-input" type="password"><br><br>
+            <label>新密码：</label>
+            <input id="new-password-input" type="password"><br><br>
+            <label>确认新密码：</label>
+            <input id="confirm-password-input" type="password"><br><br>
+            <button id="submit-password-btn">确定修改</button>
+            <button id="close-password-btn">取消</button>
+        </div>
+    </div>
+
+    <div id="delete-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div
+            style="background-color: white; width: 300px; margin: 150px auto; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>注销账号</h3>
+            <p style="color: red;">注销后账号将无法恢复！</p>
+            <label>请输入密码确认：</label>
+            <input id="delete-password-input" type="password"><br><br>
+            <button id="submit-delete-btn">确认注销</button>
+            <button id="close-delete-btn">取消</button>
+        </div>
+    </div>
+</body>
+<script>
+    let access_token = localStorage.getItem("access-token");
+
+    window.onload = async function () {
+        if (access_token == null) {
+            alert("请先登录！");
+            window.location.href = "login.html";
+            return;
+        }
+        let response = await fetch("http://127.0.0.1:8000/api/users/me", {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + access_token
+            }
+        });
+        result = await response.json();
+        if (response.ok) {
+            document.getElementById("welcome-msg").innerText = "欢迎你，" + result.data.username;
+            document.getElementById("user-info").innerText = "用户ID: " + result.data.id + "   注册时间: " + result.data.created_at;
+        } else {
+            alert("账号异常，请重新登录");
+            localStorage.removeItem("access-token");
+            window.location.href = "login.html";
+        }
+    }
+
+    document.getElementById("open-rename-button").onclick = function () {
+        document.getElementById("rename-modal").style.display = "block";
+    }
+    document.getElementById("close-rename-btn").onclick = function () {
+        document.getElementById("rename-modal").style.display = "none";
+        document.getElementById("new-username-input").value = "";
+    }
+    document.getElementById("submit-rename-btn").onclick = async function () {
+        let new_username = document.getElementById("new-username-input").value;
+        if (new_username.length < 2 || new_username.length > 15) {
+            alert("用户名长度必须在2-15位之间！");
+            return;
+        }
+        let response = await fetch("http://127.0.0.1:8000/api/users/change-username", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + access_token
+            },
+            body: JSON.stringify({ "new_username": new_username })
+        });
+        let result = await response.json();
+        if (response.ok) {
+            alert("用户名修改成功");
+            document.getElementById("rename-modal").style.display = "none";
+            document.getElementById("new-username-input").value = "";
+            document.getElementById("welcome-msg").innerText = "欢迎你，" + new_username;
+        } else {
+            alert("修改失败: " + result.message);
+        }
+    }
+
+    document.getElementById("open-password-button").onclick = function () {
+        document.getElementById("password-modal").style.display = "block";
+    }
+    document.getElementById("close-password-btn").onclick = function () {
+        document.getElementById("password-modal").style.display = "none";
+        document.getElementById("old-password-input").value = "";
+        document.getElementById("new-password-input").value = "";
+        document.getElementById("confirm-password-input").value = "";
+    }
+    document.getElementById("submit-password-btn").onclick = async function () {
+        let old_password = document.getElementById("old-password-input").value;
+        let new_password = document.getElementById("new-password-input").value;
+        let confirm_password = document.getElementById("confirm-password-input").value;
+        if (!old_password || !new_password) {
+            alert("请填写完整信息");
+            return;
+        }
+        if (new_password !== confirm_password) {
+            alert("两次新密码输入不一致！");
+            return;
+        }
+        if (new_password === old_password) {
+            alert("新密码不能与原密码相同！");
+            return;
+        }
+        let response = await fetch("http://127.0.0.1:8000/api/users/change-password", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + access_token
+            },
+            body: JSON.stringify({
+                "old_password": old_password,
+                "new_password": new_password
+            })
+        });
+        let result = await response.json();
+        if (response.ok) {
+            alert("密码修改成功，请重新登录");
+            localStorage.removeItem("access-token");
+            window.location.href = "login.html";
+        } else {
+            alert("修改失败: " + result.message);
+        }
+    }
+
+    document.getElementById("open-delete-button").onclick = function () {
+        document.getElementById("delete-modal").style.display = "block";
+    }
+    document.getElementById("close-delete-btn").onclick = function () {
+        document.getElementById("delete-modal").style.display = "none";
+        document.getElementById("delete-password-input").value = "";
+    }
+    document.getElementById("submit-delete-btn").onclick = async function () {
+        let password = document.getElementById("delete-password-input").value;
+        if (!password) {
+            alert("请输入密码");
+            return;
+        }
+        if (!confirm("确定要注销账号吗？此操作不可撤销！")) {
+            return;
+        }
+        let response = await fetch("http://127.0.0.1:8000/api/users/me", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + access_token
+            },
+            body: JSON.stringify({ "password": password })
+        });
+        let result = await response.json();
+        if (response.ok) {
+            alert("账号已注销");
+            localStorage.removeItem("access-token");
+            window.location.href = "login.html";
+        } else {
+            alert("注销失败: " + result.message);
+        }
+    }
+
+    document.getElementById("logout-button").onclick = function () {
+        localStorage.removeItem("access-token");
+        window.location.href = "login.html";
+    };
+</script>
+
+</html>

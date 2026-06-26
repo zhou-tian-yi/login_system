@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>XX管理系统 - 注册</title>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <h1>XX管理系统</h1>
+        <label>账号：</label> <input id="user-input"> <br><br>
+        <label>密码：</label> <input id="password-input1" type="password"> <br><br>
+        <label>确认密码：</label> <input id="password-input2" type="password"> <br><br>
+        <button id="register-button">注册</button>
+        <button id="back-button">返回登录</button>
+    </div>
+</body>
+<script>
+    let register_button = document.getElementById("register-button");
+    register_button.onclick = async function () {
+        let username = document.getElementById("user-input").value;
+        if (username.length < 2 || username.length > 15) {
+            alert("用户名长度必须在2-15位之间！");
+            return;
+        }
+        let password = document.getElementById("password-input1").value;
+        let password2 = document.getElementById("password-input2").value;
+        if (!password) {
+            alert("密码不能为空！");
+            return;
+        }
+        if (password != password2) {
+            alert("两次密码不相同！");
+            return;
+        }
+        let response = await fetch("http://127.0.0.1:8000/api/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "username": username,
+                "password": password
+            })
+        });
+        let result = await response.json();
+        if (response.ok) {
+            alert("注册成功");
+            window.location.href = "login.html";
+        } else {
+            alert("注册失败: " + result.message);
+        }
+    }
+
+    let back_button = document.getElementById("back-button");
+    back_button.onclick = function () {
+        window.location.href = "login.html";
+    }
+</script>
+
+</html>

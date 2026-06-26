@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy[asyncio]
+aiomysql
+passlib[bcrypt]
+bcrypt<4.1
+PyJWT
+pydantic-settings
+python-multipart
