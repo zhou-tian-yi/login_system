@@ -16,6 +16,7 @@
         <button id="back-button">返回登录</button>
     </div>
 </body>
+<script src="config.js"></script>
 <script>
     let register_button = document.getElementById("register-button");
     register_button.onclick = async function () {
@@ -34,7 +35,7 @@
             alert("两次密码不相同！");
             return;
         }
-        let response = await fetch("http://127.0.0.1:8000/api/auth/register", {
+        let response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

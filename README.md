@@ -9,7 +9,7 @@
 
 ## 功能
 
-- 用户注册 / 登录（JWT 认证）
+- 用户注册 / 登录（JWT + httpOnly Cookie 认证）
 - 查看个人信息
 - 修改用户名 / 修改密码
 - 注销账号
@@ -34,11 +34,12 @@ cd backend
 cp .env.example .env
 ```
 
-编辑 `.env`，填入你的数据库连接信息和 JWT 密钥：
+编辑 `.env`，填入你的数据库连接信息、JWT 密钥和服务地址：
 
 ```
 DATABASE_URL = mysql+aiomysql://root:你的密码@localhost:3306/auth_system
 JWT_KEY = 随便填一串随机字符
+SERVICE_URL = http://127.0.0.1:8000
 ```
 
 ### 3. 安装依赖
@@ -54,14 +55,11 @@ cd backend
 python -m backend.scripts.create_tables
 ```
 
-### 5. 启动后端
+### 5. 启动服务
 
 ```bash
-uvicorn backend.main:app
+cd backend
+python run.py
 ```
 
-默认运行在 `http://127.0.0.1:8000`
-
-### 6. 打开前端
-
-直接在浏览器打开 `frontend/login.html` 即可使用。
+浏览器访问服务地址（默认 `http://127.0.0.1:8000`）

@@ -62,28 +62,19 @@
         </div>
     </div>
 </body>
+<script src="config.js"></script>
 <script>
-    let access_token = localStorage.getItem("access-token");
-
     window.onload = async function () {
-        if (access_token == null) {
-            alert("请先登录！");
-            window.location.href = "login.html";
-            return;
-        }
-        let response = await fetch("http://127.0.0.1:8000/api/users/me", {
+        let response = await fetch(`${API_BASE_URL}/users/me`, {
             method: "GET",
-            headers: {
-                "Authorization": "Bearer " + access_token
-            }
+            credentials: "include"
         });
         result = await response.json();
         if (response.ok) {
             document.getElementById("welcome-msg").innerText = "欢迎你，" + result.data.username;
             document.getElementById("user-info").innerText = "用户ID: " + result.data.id + "   注册时间: " + result.data.created_at;
         } else {
-            alert("账号异常，请重新登录");
-            localStorage.removeItem("access-token");
+            alert("请先登录");
             window.location.href = "login.html";
         }
     }
@@ -101,11 +92,11 @@
             alert("用户名长度必须在2-15位之间！");
             return;
         }
-        let response = await fetch("http://127.0.0.1:8000/api/users/change-username", {
+        let response = await fetch(`${API_BASE_URL}/users/change-username`, {
             method: "POST",
+            credentials: "include",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + access_token
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({ "new_username": new_username })
         });
@@ -145,11 +136,11 @@
             alert("新密码不能与原密码相同！");
             return;
         }
-        let response = await fetch("http://127.0.0.1:8000/api/users/change-password", {
+        let response = await fetch(`${API_BASE_URL}/users/change-password`, {
             method: "POST",
+            credentials: "include",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + access_token
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
                 "old_password": old_password,
@@ -159,7 +150,6 @@
         let result = await response.json();
         if (response.ok) {
             alert("密码修改成功，请重新登录");
-            localStorage.removeItem("access-token");
             window.location.href = "login.html";
         } else {
             alert("修改失败: " + result.message);
@@ -182,26 +172,28 @@
         if (!confirm("确定要注销账号吗？此操作不可撤销！")) {
             return;
         }
-        let response = await fetch("http://127.0.0.1:8000/api/users/me", {
+        let response = await fetch(`${API_BASE_URL}/users/me`, {
             method: "DELETE",
+            credentials: "include",
             headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + access_token
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({ "password": password })
         });
         let result = await response.json();
         if (response.ok) {
             alert("账号已注销");
-            localStorage.removeItem("access-token");
             window.location.href = "login.html";
         } else {
             alert("注销失败: " + result.message);
         }
     }
 
-    document.getElementById("logout-button").onclick = function () {
-        localStorage.removeItem("access-token");
+    document.getElementById("logout-button").onclick = async function () {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+            method: "POST",
+            credentials: "include"
+        });
         window.location.href = "login.html";
     };
 </script>

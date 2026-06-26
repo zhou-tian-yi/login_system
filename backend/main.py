@@ -1,10 +1,12 @@
 import logging
+from pathlib import Path
 from fastapi import FastAPI, Request, status
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.responses import JSONResponse
-from backend.utils.logger import RequestIDMiddleware
-from backend.routers import router
+from fastapi.staticfiles import StaticFiles
+from utils.logger import RequestIDMiddleware
+from routers import router
+from config import settings
 
 logger = logging.getLogger("app")
 
@@ -14,16 +16,12 @@ app = FastAPI(
     version = "0.1.0"
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins = ["*"],
-    allow_credentials = True,
-    allow_methods = ["*"],
-    allow_headers = ["*"]
-)
 app.add_middleware(RequestIDMiddleware)
 
 app.include_router(router)
+
+frontend_dir = Path(__file__).parent.parent / "frontend"
+app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -73,4 +71,4 @@ async def universal_exception_handler(request: Request, exc: Exception):
 
 
 
-logger.info("应用启动完成，API 服务已就绪")
+logger.info("应用启动完成，服务地址: %s", settings.SERVICE_URL)

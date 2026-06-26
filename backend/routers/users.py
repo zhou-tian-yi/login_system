@@ -3,10 +3,10 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
-from backend.database import get_db
-import backend.schemas as schemas
-import backend.models as models
-from backend.utils.security import verify_password, get_password_hash
+from database import get_db
+import schemas as schemas
+import models as models
+from utils.security import verify_password, get_password_hash
 from .utils import get_current_user, find_user_by_username
 
 logger = logging.getLogger("app")

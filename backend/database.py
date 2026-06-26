@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
-from backend.config import settings
+from config import settings
 
 logger = logging.getLogger("app")
 

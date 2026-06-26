@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     JWT_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     LOGGING_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"]
+    SERVICE_URL: str
 
     model_config = SettingsConfigDict(
         env_file = Path(__file__).parent / ".env",
@@ -17,7 +18,7 @@ class Settings(BaseSettings):
 settings = Settings()
 
 import logging.config
-from backend.utils.logger import RequestIDFilter
+from utils.logger import RequestIDFilter
 
 LOGGING_CONFIG = {
     "version": 1,

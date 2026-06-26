@@ -1,12 +1,14 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
-from backend.database import get_db
-from backend.utils.security import get_password_hash, verify_password, create_access_token
-import backend.schemas as schemas
-import backend.models as models
+from config import settings
+from database import get_db
+from utils.security import get_password_hash, verify_password, create_access_token
+import schemas
+import models
 from .utils import find_user_by_username
 
 logger = logging.getLogger("app")
@@ -59,12 +61,22 @@ async def login(user: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annot
     access_token = create_access_token(data={"sub": str(user_db.id)})
 
     logger.info("登录成功，用户名: %s，用户ID: %s", user.username, user_db.id)
-    return {
+    response = JSONResponse({
         "message": "登录成功",
-        "access_token": access_token,
-        "token_type": "bearer",
-        "data": {
-            "access_token": access_token,
-            "token_type": "bearer",
-        }
-    }
+        "data": {}
+    })
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
+    return response
+
+@router.post("/logout")
+async def logout():
+    response = JSONResponse({"message": "已退出登录", "data": {}})
+    response.delete_cookie(key="access_token")
+    return response

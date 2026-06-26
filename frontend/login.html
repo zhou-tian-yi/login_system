@@ -15,14 +15,16 @@
         <button id="register-button">注册</button>
     </div>
 </body>
+<script src="config.js"></script>
 <script>
-    window.onload = function () {
-        let access_token = localStorage.getItem("access-token")
-        if (access_token) {
+    window.onload = async function () {
+        let response = await fetch(`${API_BASE_URL}/users/me`, {
+            credentials: "include"
+        });
+        if (response.ok) {
             window.location.href = "dashboard.html";
         }
     };
-
     let login_button = document.getElementById("login-button");
     login_button.onclick = async function () {
         let username = document.getElementById("user-input").value;
@@ -34,14 +36,14 @@
         let formData = new URLSearchParams();
         formData.append("username", username);
         formData.append("password", password);
-        let response = await fetch("http://127.0.0.1:8000/api/auth/login", {
+        let response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: "POST",
+            credentials: "include",
             body: formData
         });
         let result = await response.json();
         if (response.ok) {
             alert("登录成功");
-            localStorage.setItem("access-token", result.access_token);
             window.location.href = "dashboard.html";
         } else {
             alert("登录失败: " + result.message);

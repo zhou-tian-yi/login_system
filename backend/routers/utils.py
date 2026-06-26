@@ -1,24 +1,29 @@
 import logging
 import jwt
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
-from backend.database import get_db
-from backend.utils.security import decode_token
-import backend.models as models
+from database import get_db
+from utils.security import decode_token
+import models
 
 logger = logging.getLogger("app")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_current_user(request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
+    token = request.cookies.get("access_token")
+    if not token:
+        logger.warning("请求缺少 access_token cookie")
+        raise HTTPException(
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            detail = "未登录",
+            headers = {"WWW-Authenticate": "Bearer"}
+        )
     try:
         payload = decode_token(token)
         id = payload.get("sub")
         if id is None:
-            logger.warning("Token 验证失败: 缺少 sub 字段")
+            logger.warning("登录凭证验证失败: 缺少 sub 字段")
             raise HTTPException(
                 status_code = status.HTTP_401_UNAUTHORIZED,
                 detail = "无效的登录凭证",
@@ -39,7 +44,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: An
         logger.info("Token 已过期")
         raise HTTPException(
             status_code = status.HTTP_401_UNAUTHORIZED,
-            detail = "凭证已过期，请重新登录",
+            detail = "登录已过期，请重新登录",
             headers = {"WWW-Authenticate": "Bearer"}
         )
     except jwt.InvalidTokenError:
