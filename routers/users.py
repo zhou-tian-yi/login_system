@@ -35,10 +35,11 @@ async def delete_account(payload: schemas.Password, user: Annotated[models.User,
             status_code = status.HTTP_401_UNAUTHORIZED,
             detail = "密码错误"
         )
+    old_name = user.username
     user.is_active = False
     user.username = f"{user.username}#delete#{int(time.time())}"
     await db.commit()
-    logger.info("用户已成功注销，原用户名: %s (ID: %s)", user.username, user.id)
+    logger.info("用户已成功注销，原用户名: %s (ID: %s)", old_name, user.id)
     response = JSONResponse({
         "message": "用户已成功注销",
         "data": {}
