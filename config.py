@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     LOGGING_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"]
     SERVICE_URL: str
+    ALLOW_ORIGINS: list[str]
 
     model_config = SettingsConfigDict(
         env_file = Path(__file__).parent / ".env",

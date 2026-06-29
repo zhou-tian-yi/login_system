@@ -1,6 +1,6 @@
 # XX管理系统
 
-一个简单的用户认证系统练习项目，基于 FastAPI + 原生 HTML/JS。
+一个简单的用户认证系统练习项目，基于 FastAPI + 原生 HTML/JS，前后端分离架构。
 
 ## 技术栈
 
@@ -13,6 +13,22 @@
 - 查看个人信息
 - 修改用户名 / 修改密码
 - 注销账号
+
+## 项目结构
+
+```
+├── frontend/           # 前端静态文件（独立部署）
+├── routers/            # API 路由
+│   ├── auth.py         # 注册、登录、登出
+│   └── users.py        # 用户信息、修改密码、修改用户名、注销
+├── utils/              # 工具模块（日志、安全）
+├── scripts/            # 脚本（建表等）
+├── main.py             # 应用入口
+├── config.py           # 配置管理
+├── models.py           # 数据库模型
+├── schemas.py          # Pydantic 请求/响应模型
+└── run.py              # 启动脚本
+```
 
 ## 环境要求
 
@@ -39,7 +55,11 @@ cp .env.example .env
 DATABASE_URL = mysql+aiomysql://root:你的密码@localhost:3306/auth_system
 JWT_KEY = 随便填一串随机字符
 SERVICE_URL = http://127.0.0.1:8000
+ALLOW_ORIGINS = ["http://127.0.0.1:5500"]
 ```
+
+> **注意**：`ALLOW_ORIGINS` 需与前端的实际访问地址一致。
+> 不要使用 `localhost`，因为 `SameSite=Lax` Cookie 策略下 `localhost` 与 `127.0.0.1` 被视为不同站点，会导致认证失败。
 
 ### 3. 安装依赖
 
@@ -53,10 +73,20 @@ pip install -r requirements.txt
 python -m scripts.create_tables
 ```
 
-### 5. 启动服务
+### 5. 启动后端服务
 
 ```bash
 python run.py
 ```
 
-浏览器访问服务地址（默认 `http://127.0.0.1:8000`）
+后端 API 运行在 `http://127.0.0.1:8000`。
+
+### 6. 启动前端服务
+
+新开一个终端窗口，执行：
+
+```bash
+python -m http.server 5500 -d frontend
+```
+
+浏览器访问 `http://127.0.0.1:5500` 即可使用系统。
