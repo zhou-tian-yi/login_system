@@ -1,6 +1,7 @@
 import logging
 import time
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from database import get_db
@@ -38,10 +39,12 @@ async def delete_account(payload: schemas.Password, user: Annotated[models.User,
     user.username = f"{user.username}#delete#{int(time.time())}"
     await db.commit()
     logger.info("用户已成功注销，原用户名: %s (ID: %s)", user.username, user.id)
-    return {
+    response = JSONResponse({
         "message": "用户已成功注销",
         "data": {}
-    }
+    })
+    response.delete_cookie(key="access_token")
+    return response
 
 @router.post("/change-password")
 async def change_password(payload: schemas.ChangePassword, user: Annotated[models.User, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
