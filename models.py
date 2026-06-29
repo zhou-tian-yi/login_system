@@ -13,3 +13,5 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)
 
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+
+    token_version = Column(Integer, default=1, nullable=False)

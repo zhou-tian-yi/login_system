@@ -2,6 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from config import settings
@@ -9,7 +10,7 @@ from database import get_db
 from utils.security import get_password_hash, verify_password, create_access_token
 import schemas
 import models
-from .utils import find_user_by_username
+from .utils import find_user_by_username, get_current_user
 
 logger = logging.getLogger("app")
 
@@ -58,7 +59,12 @@ async def login(user: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annot
             headers={"WWW-Authenticate": "Bearer"}
         )
     
-    access_token = create_access_token(data={"sub": str(user_db.id)})
+    access_token = create_access_token(
+        data = {
+            "sub": str(user_db.id),
+            "token_version": str(user_db.token_version)
+        }
+    )
 
     logger.info("登录成功，用户名: %s，用户ID: %s", user.username, user_db.id)
     response = JSONResponse({
@@ -76,7 +82,13 @@ async def login(user: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annot
     return response
 
 @router.post("/logout")
-async def logout():
+async def logout(user: Annotated[models.User, Depends(get_current_user)], db: Annotated[AsyncSession, Depends(get_db)]):
+    await db.execute(
+        update(models.User)
+        .where(models.User.id == user.id)
+        .values(token_version=models.User.token_version + 1)
+    )
+    await db.commit()
     response = JSONResponse({"message": "已退出登录", "data": {}})
     response.delete_cookie(key="access_token")
     return response
